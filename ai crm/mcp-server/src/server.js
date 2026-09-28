@@ -1,0 +1,15 @@
+import 'dotenv/config';
+import express from 'express';
+import {connectDb} from './db.js';
+import {getCustomer,getCustomerLeads,getLead,getLeadConversations,getLeadInteractions,getLeadFollowups,getLeadOrder,getLeadContext} from './tools/leadTools.js';
+const app=express(); app.use(express.json());
+app.get('/health',(_req,res)=>res.json({ok:true,service:'crm-mcp'}));
+app.get('/tools/customer/:id',async(req,res)=>res.json(await getCustomer(req.params.id)));
+app.get('/tools/customer/:id/leads',async(req,res)=>res.json(await getCustomerLeads(req.params.id)));
+app.get('/tools/lead/:id',async(req,res)=>res.json(await getLead(req.params.id)));
+app.get('/tools/lead/:id/conversations',async(req,res)=>res.json(await getLeadConversations(req.params.id)));
+app.get('/tools/lead/:id/interactions',async(req,res)=>res.json(await getLeadInteractions(req.params.id)));
+app.get('/tools/lead/:id/followups',async(req,res)=>res.json(await getLeadFollowups(req.params.id)));
+app.get('/tools/lead/:id/order',async(req,res)=>res.json(await getLeadOrder(req.params.id)));
+app.get('/tools/lead-context/:id',async(req,res)=>{try{res.json(await getLeadContext(req.params.id));}catch(e){res.status(404).json({error:e.message});}});
+connectDb().then(()=>app.listen(process.env.MCP_PORT||4001,()=>console.log(`MCP tool server on ${process.env.MCP_PORT||4001}`))).catch(e=>{console.error(e);process.exit(1)});
